@@ -10,26 +10,27 @@
     .swiper-slide { width: 100%; height: 100%; overflow-y: auto; background: #000; display: flex; flex-direction: column; }
     
     .video-section { position: relative; width: 100%; background: #000; flex-shrink: 0; }
-    .video-ratio { position: relative; width: 100%; padding-bottom: 177.77%;   }
+    .video-ratio { position: relative; width: 100%; padding-bottom: 177.77%; } 
     iframe { position: absolute; top: 0; left: 0; width: 100%; height: 100%; pointer-events: none; }
     
-    .unmute-overlay {
-      position: absolute; top: 0; left: 0; width: 100%; height: 100%;
-      z-index: 20; display: flex; justify-content: center; align-items: center;
-      background: rgba(0,0,0,0.15); cursor: pointer;
+     
+    .mute-overlay {
+      position: absolute; top: 20px; right: 20px; z-index: 50;
+      background: rgba(0,0,0,0.6); color: #fff; padding: 10px 15px;
+      border-radius: 30px; font-size: 13px; font-weight: bold; cursor: pointer;
+      display: flex; align-items: center; gap: 5px; border: 1px solid rgba(255,255,255,0.3);
     }
-    .unmute-btn { background: rgba(255,255,255,0.95); color: #000; padding: 15px 30px; border-radius: 50px; font-weight: bold; font-size: 15px; box-shadow: 0 4px 15px rgba(0,0,0,0.3); }
 
     .video-controls {
       position: absolute; bottom: 40px; right: 20px; z-index: 40;
       background: rgba(0,0,0,0.5); color: #fff; width: 45px; height: 45px;
-      border-radius: 50%; display: none; justify-content: center; align-items: center; cursor: pointer; font-size: 20px;
+      border-radius: 50%; display: flex; justify-content: center; align-items: center; cursor: pointer; font-size: 20px;
     }
 
     .info-panel { background: #fff; padding: 30px 20px; border-radius: 25px 25px 0 0; margin-top: -20px; z-index: 30; flex-grow: 1; position: relative; }
     .text-msg { font-size: 16px; color: #333; line-height: 1.7; margin-bottom: 20px; white-space: pre-wrap; }
     .action-btn { display: block; width: 100%; padding: 15px; background: #4285f4; color: #fff; text-align: center; text-decoration: none; border-radius: 12px; font-weight: bold; margin-bottom: 10px; box-sizing: border-box; }
-    .page-img { width: 100%; border-radius: 12px; margin-bottom: 20px; box-shadow: 0 2px 10px rgba(0,0,0,0.1); }
+    .page-img { width: 100%; border-radius: 12px; margin-bottom: 20px; }
   </style>
 </head>
 <body>
@@ -40,11 +41,13 @@
                   <div class="video-section">
             <div class="video-ratio">
               <iframe id="vid-0" 
-                src="https://www.youtube.com/embed/CynV7OsywG8?enablejsapi=1&amp;autoplay=0&amp;mute=1&amp;controls=0&amp;modestbranding=1&amp;rel=0&amp;loop=1&amp;playlist=CynV7OsywG8" 
+                src="https://www.youtube.com/embed/CynV7OsywG8?enablejsapi=1&amp;autoplay=1&amp;mute=1&amp;controls=0&amp;modestbranding=1&amp;rel=0&amp;loop=1&amp;playlist=CynV7OsywG8" 
                 frameborder="0" allow="autoplay; encrypted-media"></iframe>
-              <div class="unmute-overlay" onclick="startVideo('vid-0', this)">
-                <div class="unmute-btn">🔊 소리 켜기 & 시작</div>
+              
+              <div class="mute-overlay" id="mute-0" onclick="unmuteFirst('vid-0', this)">
+                <span>🔊 소리 켜기</span>
               </div>
+
               <div class="video-controls" id="ctrl-0" onclick="togglePlay('vid-0', this)">⏸</div>
             </div>
           </div>
@@ -58,9 +61,11 @@
               <iframe id="vid-1" 
                 src="https://www.youtube.com/embed/NPKMcO5uBGk?enablejsapi=1&amp;autoplay=0&amp;mute=1&amp;controls=0&amp;modestbranding=1&amp;rel=0&amp;loop=1&amp;playlist=NPKMcO5uBGk" 
                 frameborder="0" allow="autoplay; encrypted-media"></iframe>
-              <div class="unmute-overlay" onclick="startVideo('vid-1', this)">
-                <div class="unmute-btn">🔊 소리 켜기 & 시작</div>
+              
+              <div class="mute-overlay" id="mute-1" onclick="unmuteFirst('vid-1', this)">
+                <span>🔊 소리 켜기</span>
               </div>
+
               <div class="video-controls" id="ctrl-1" onclick="togglePlay('vid-1', this)">⏸</div>
             </div>
           </div>
@@ -74,8 +79,8 @@
 
 <script src="https://cdn.jsdelivr.net/npm/swiper@11/swiper-bundle.min.js"></script>
 <script>
-  let hasStarted = false; 
-  const playedStates = {}; 
+  let isMuted = true;
+  const playedStates = { 0: true }; 
 
   const swiper = new Swiper('.swiper', {
     pagination: { el: '.swiper-pagination', clickable: true },
@@ -85,16 +90,21 @@
         document.querySelectorAll('iframe').forEach((f, idx) => {
           if (idx === activeIdx) {
             if (!playedStates[idx]) {
-              
               f.contentWindow.postMessage('{"event":"command","func":"seekTo","args":[0, true]}', '*');
               playedStates[idx] = true; 
             }
-            
             f.contentWindow.postMessage('{"event":"command","func":"playVideo","args":""}', '*');
+            
+            
+            if(!isMuted) {
+                f.contentWindow.postMessage('{"event":"command","func":"unMute","args":""}', '*');
+                const muteBtn = document.getElementById('mute-' + idx);
+                if(muteBtn) muteBtn.style.display = 'none';
+            }
+
             const ctrl = document.getElementById('ctrl-' + idx);
             if(ctrl) ctrl.innerText = '⏸';
           } else {
-            
             f.contentWindow.postMessage('{"event":"command","func":"pauseVideo","args":""}', '*');
           }
         });
@@ -102,18 +112,15 @@
     }
   });
 
-  function startVideo(id, overlay) {
+  
+  function unmuteFirst(id, btn) {
     const f = document.getElementById(id);
-    const idx = id.split('-')[1];
-    const ctrl = document.getElementById('ctrl-' + idx);
     if (f && f.contentWindow) {
       f.contentWindow.postMessage('{"event":"command","func":"unMute","args":""}', '*');
       f.contentWindow.postMessage('{"event":"command","func":"playVideo","args":""}', '*');
-      if(ctrl) ctrl.style.display = 'flex';
-      hasStarted = true;
-      playedStates[idx] = true;
+      isMuted = false; 
     }
-    overlay.style.display = 'none';
+    btn.style.display = 'none';
   }
 
   function togglePlay(id, btn) {
