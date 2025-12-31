@@ -10,6 +10,18 @@
     .swiper-slide { width: 100%; height: 100%; overflow-y: auto; background: #000; display: flex; flex-direction: column; }
     
      
+    .page-title-overlay {
+      position: absolute; top: 30px; left: 0; width: 100%; text-align: center; z-index: 100;
+      pointer-events: none; transition: opacity 1s ease; opacity: 0;
+    }
+    .page-title-text {
+      display: inline-block; background: rgba(0, 0, 0, 0.6); color: #fff;
+      padding: 8px 20px; border-radius: 20px; font-size: 16px; font-weight: bold;
+      backdrop-filter: blur(5px); border: 1px solid rgba(255, 255, 255, 0.2);
+    }
+    .show-title { opacity: 1; }
+
+     
     .video-section { position: relative; width: 100%; background: #000; flex-shrink: 0; }
     .video-ratio { position: relative; width: 100%; padding-bottom: 177.77%; } 
     iframe { position: absolute; top: 0; left: 0; width: 100%; height: 100%; pointer-events: none; border: none; }
@@ -55,6 +67,10 @@
 <div class="swiper">
   <div class="swiper-wrapper">
           <div class="swiper-slide">
+        <div class="page-title-overlay" id="title-0">
+          <div class="page-title-text">힘찬 새해되십시오</div>
+        </div>
+
                   <div class="video-section">
             <div class="video-ratio">
               <iframe id="vid-0" 
@@ -89,6 +105,10 @@
         </div>
       </div>
           <div class="swiper-slide">
+        <div class="page-title-overlay" id="title-1">
+          <div class="page-title-text">대한민국사회공헌대상 수상</div>
+        </div>
+
                   <div class="video-section">
             <div class="video-ratio">
               <iframe id="vid-1" 
@@ -118,13 +138,28 @@
 <script src="https://cdn.jsdelivr.net/npm/swiper@11/swiper-bundle.min.js"></script>
 <script>
   let isGlobalMuted = true;
+
+  
+  function showTitleOverlay(idx) {
+    const titleEl = document.getElementById('title-' + idx);
+    if (!titleEl) return;
+    
+    titleEl.classList.add('show-title');
+    setTimeout(() => {
+      titleEl.classList.remove('show-title');
+    }, 3000); 
+  }
+
   const swiper = new Swiper('.swiper', {
-    direction: 'horizontal', 
-    loop: false,
-    navigation: { nextEl: '.swiper-button-next', prevEl: '.swiper-button-prev' },
+    direction: 'horizontal',
     on: {
+      init: function() {
+        showTitleOverlay(0); 
+      },
       slideChange: function () {
         const activeIdx = this.activeIndex;
+        showTitleOverlay(activeIdx); 
+
         document.querySelectorAll('iframe').forEach((f, idx) => {
           if (idx === activeIdx) {
             f.contentWindow.postMessage('{"event":"command","func":"playVideo","args":""}', '*');
