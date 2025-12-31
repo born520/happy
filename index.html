@@ -58,8 +58,17 @@
     .opt-out-link { display: inline-block; font-size: 13px; color: #888; text-decoration: underline; background: #f8f8f8; padding: 8px 15px; border-radius: 5px; border: none; cursor: pointer; }
 
      
-    .swiper-button-next, .swiper-button-prev { color: #fff !important; background: rgba(0,0,0,0.3); width: 35px !important; height: 35px !important; border-radius: 50%; }
-    .swiper-button-next:after, .swiper-button-prev:after { font-size: 15px !important; font-weight: bold; }
+    .swiper-button-next, .swiper-button-prev { 
+      color: #fff !important; background: rgba(0,0,0,0.3); 
+      width: 40px !important; height: 40px !important; border-radius: 50%;
+      transition: opacity 0.3s;
+    }
+    .swiper-button-next:after, .swiper-button-prev:after { font-size: 16px !important; font-weight: bold; }
+    
+     
+    .swiper-button-disabled {
+      display: none !important;
+    }
   </style>
 </head>
 <body>
@@ -139,26 +148,29 @@
 <script>
   let isGlobalMuted = true;
 
-  
   function showTitleOverlay(idx) {
     const titleEl = document.getElementById('title-' + idx);
     if (!titleEl) return;
-    
     titleEl.classList.add('show-title');
     setTimeout(() => {
       titleEl.classList.remove('show-title');
-    }, 3000); 
+    }, 3000);
   }
 
   const swiper = new Swiper('.swiper', {
     direction: 'horizontal',
+    loop: false, 
+    navigation: { 
+      nextEl: '.swiper-button-next', 
+      prevEl: '.swiper-button-prev' 
+    },
     on: {
       init: function() {
-        showTitleOverlay(0); 
+        showTitleOverlay(0);
       },
       slideChange: function () {
         const activeIdx = this.activeIndex;
-        showTitleOverlay(activeIdx); 
+        showTitleOverlay(activeIdx);
 
         document.querySelectorAll('iframe').forEach((f, idx) => {
           if (idx === activeIdx) {
