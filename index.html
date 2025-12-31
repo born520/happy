@@ -59,6 +59,23 @@
       width: 0; height: 0; border-left: 10px solid transparent;
       border-right: 10px solid transparent; border-top: 12px solid #fff;
     }
+
+     
+    .next-hint {
+      position: absolute; right: 60px; top: 50%; transform: translateY(-50%);
+      z-index: 100; color: #fff; display: flex; align-items: center;
+      pointer-events: none; transition: opacity 0.3s;
+    }
+    .next-hint-text {
+      background: rgba(66, 133, 244, 0.8); color: white; padding: 6px 12px;
+      border-radius: 15px; font-size: 12px; font-weight: bold;
+      white-space: nowrap; animation: slideRight 1.5s infinite;
+    }
+    @keyframes slideRight {
+      0%, 100% { transform: translateX(0); }
+      50% { transform: translateX(10px); }
+    }
+
     @keyframes bounce {
       0%, 20%, 50%, 80%, 100% {transform: translateX(-50%) translateY(0);}
       40% {transform: translateX(-50%) translateY(-10px);}
@@ -87,6 +104,7 @@
     }
     .swiper-button-next:after, .swiper-button-prev:after { font-size: 16px !important; font-weight: bold; }
     .swiper-button-disabled { display: none !important; }
+    .swiper-button-disabled + .next-hint { display: none !important; }  
   </style>
 </head>
 <body>
@@ -173,6 +191,9 @@
       </div>
       </div>
   <div class="swiper-button-next"></div>
+  <div class="next-hint">
+    <div class="next-hint-text">다음 소식 ▶</div>
+  </div>
   <div class="swiper-button-prev"></div>
 </div>
 
@@ -198,6 +219,15 @@
       slideChange: function () {
         const activeIdx = this.activeIndex;
         showTitleOverlay(activeIdx);
+        
+        
+        const nextHint = document.querySelector('.next-hint');
+        if (this.isEnd) {
+          if(nextHint) nextHint.style.opacity = '0';
+        } else {
+          if(nextHint) nextHint.style.opacity = '1';
+        }
+
         document.querySelectorAll('iframe').forEach((f, idx) => {
           if (idx === activeIdx) {
             f.contentWindow.postMessage('{"event":"command","func":"playVideo","args":""}', '*');
